@@ -1,86 +1,51 @@
 import random
+import copy
+import sys
 
-def contraction_algo(vertices, edges):
-    '''
-    Karger's recursive randomized algorithm for finding the min cut with Pr[1/n(n-1)] of success.
-    This must be called many times to guarantee an overall high probability of success.
-    '''
-    # Check if base case conditions are met (there is 1 edge left)
-    if len(edges) == 1:
-        return edges[0][2];    # Return the parallel edge count of the last remaining edge.
+def contract(input):
+    g = copy.deepcopy(input)
+    next_id = max(g.iterkeys()) + 1
+    cuts = {}
+    while len(g) > 2:
+        p1 = random.choice(g.keys())
+        p2 = random.choice(g[p1].keys())
+        merged = next_id
+        cuts[merged] = cuts.pop(p1) if p1 in cuts else [p1]
+        cuts[merged] += cuts.pop(p2) if p2 in cuts else [p2]
+        g[p1].pop(p2)
+        g[p2].pop(p1)
+        for dest in g[p1].iterkeys():
+            g[dest][merged] = g[dest].pop(p1)
+        for dest in g[p2].iterkeys():
+            g[dest][merged] = g[dest].get(merged, 0) + g[dest].pop(p2)
+        g[merged] = g.pop(p1)
+        for dest, cnt in g.pop(p2).iteritems():
+            if dest == p1:
+                continue
+            g[merged][dest] = g[merged].get(dest, 0) + cnt
+        next_id += 1
+    return cuts.values(), g.values()[0].values()[0]
 
-    # Pick a random edge from the remaining edges.
-    rand_edge = random.randint(0, len(edges) - 1)
-    # Combine vertices with the common edge.
-    if edges[rand_edge][0] < edges[rand_edge][1]:
-        vert1 = edges[rand_edge][0]        # Head vertex
-        vert2 = edges[rand_edge][1]        # Tail vertex
-    else:
-        vert1 = edges[rand_edge][1]        # Head vertex
-        vert2 = edges[rand_edge][0]        # Tail vertex
-
-    print vert1, vert2
+inputGraph = {}
+i = 0
+#with open('wk3_test.txt') as f:
+with open('kargerMinCut.txt') as f:
+    for line in f:
+       i = i + 1
+       items = line.split()
+       edges = {}
+       for edge in items[1:]:
+           edges[int(edge)] = 1
+       inputGraph[int(line[0])] = edges
+print inputGraph
+print len(inputGraph)
+print i
+min_cut = []
+min_edges = 9999
+for x in range (0,40000):
+    cut, num_edges = contract(inputGraph)
+    if num_edges < min_edges:
+        min_edges = num_edges
+print min_edges
     
-    # Reassign the edges to vert1 and remove vert2.
-    i = 0
-    while len(edges) > i:        # TODO --- Go through only the edges that vert2 keeps track of.
-        if vert2 in edges[i][:2]:    # Don't include the parallel edges count.
-            if vert1 in edges[i][:2]:    # Delete self-loops
-                edges.pop(i)
-            else:
-                if vert2 == edges[i][0]:
-                    vert3 = edges[i][1]
-                else:
-                    vert3 = edges[i][0]
-                    # Check if an edge already exists between vert1 and vert3. If so, add 1 to the parallel lines count and remove redundant edge.
-                found_duplicate_edge = False
-                for edge in edges:
-                    if vert1 in edge[:2] and vert3 in edge[:2]:
-                        edge[2] += edges[i][2]
-                        found_duplicate_edge = True
-                        break
-                if found_duplicate_edge == False:
-                    if vert3 == edges[i][0]:
-                        edges[i][1] = vert1
-                    else:
-                        edges[i][0] = vert1
-                        i += 1
-                else:
-                    edges.pop(i)
-        else:
-            i += 1
-    new_verts = []
-    for i in range(len(vertices)):
-        if i != vert2:
-            new_verts.append(vertices[i])
-    # Remember that parallel lines are possible
-    # i.e     I need to add in a counter for each edge element which keeps track of the number of parallel lines to the edge.
-
-    # Feed the new vertices and edge values into a recursive call of this function.
-    # i.e. return contraction_algo(vertices, edges)
-    print new_verts
-    print edges
-    return contraction_algo(new_verts, edges)
-
-with open('wk3_test.txt') as f:
-    data = [map(int, line.split()) for line in f]
-#    for row in data:
-#        print row
-    inputVert = []
-    inputEdges= []
-    for vortex in data:
-        inputVert.append(vortex[0])
-        for vortex2 in vortex[1:]:
-            inputEdge = []
-            inputEdge = [vortex[0],vortex2,1]
-            print inputEdge
-            inputEdges.append(inputEdge)
-    print inputVert
-    print inputEdges
-    minCut = contraction_algo(inputVert,inputEdges)
-    for x in range(0, 256):
-        retryMincut = 9999
-        retryMinCut = contraction_algo(inputVert,inputEdges)
-        if retryMincut < minCut :
-            minCut = retryMincut
-    print minCut
+    
