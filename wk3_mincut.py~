@@ -36,7 +36,7 @@ with open('kargerMinCut.txt') as f:
        edges = {}
        for edge in items[1:]:
            edges[int(edge)] = 1
-       inputGraph[int(line[0])] = edges
+       inputGraph[int(items[0])] = edges
 print inputGraph
 print len(inputGraph)
 print i

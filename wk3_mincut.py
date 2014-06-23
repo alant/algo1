@@ -28,8 +28,8 @@ def contract(input):
 
 inputGraph = {}
 i = 0
-#with open('wk3_test.txt') as f:
-with open('kargerMinCut.txt') as f:
+with open('wk3_test.txt') as f:
+#with open('kargerMinCut.txt') as f:
     for line in f:
        i = i + 1
        items = line.split()
