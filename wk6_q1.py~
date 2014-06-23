@@ -1,7 +1,7 @@
 d = {}
 t = {}
 
-source = 'wk6_test1_2.txt'
+source = 'wk6_test1_1.txt'
 
 f = open(source)
 for line in f:
